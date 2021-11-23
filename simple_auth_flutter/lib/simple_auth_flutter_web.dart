@@ -64,6 +64,14 @@ class SimpleAuthFlutterWeb {
         return "code";
       case 'completed':
         return true;
+      case 'cancelled':
+        _controller!.add({
+          "identifier": call.arguments['identifier'],
+          "url": "canceled",
+          "forceComplete": false,
+          "description": ""
+        });
+        return true;
       default:
         throw PlatformException(
           code: 'Unimplemented',
