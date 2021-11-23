@@ -71,7 +71,24 @@ public class SimpleAuthFlutterPlugin implements FlutterPlugin, ActivityAware,Met
       result.success("success");
       return;
     }
-
+    else if (call.method.equals("cancelled")) {
+      String id = call.argument("identifier");
+      final WebAuthenticator authenticator = authenticators.get(id);
+      if (authenticator != null) {
+        authenticator.foundToken();
+        authenticators.remove(id);
+        authenticator.clearListeners();
+      }
+      _eventSink.success(new HashMap<String, String>() {
+        {
+          put("identifier", call.argument("identifier").toString());
+          put("url", "canceled");
+          put("forceComplete", "true");
+        }
+      });
+      result.success("success");
+      return;
+    }
     else if(call.method.equals("getValue")) {
       String key = call.argument("key");
       try{

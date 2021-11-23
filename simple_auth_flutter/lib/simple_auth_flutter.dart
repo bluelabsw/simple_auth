@@ -88,6 +88,8 @@ class SimpleAuthFlutter implements simpleAuth.AuthStorage {
       var uri = Uri.tryParse(change.url!)!;
       if (authenticator!.checkUrl(uri)) {
         _channel.invokeMethod("completed", {"identifier": change.identifier});
+      } else if (change.url?.contains('access_denied') == true) {
+        _channel.invokeMethod("cancelled", {"identifier": change.identifier});
       } else if (change.foreComplete) {
         authenticator.onError("Unable to get an AuthToken from the server");
       }
