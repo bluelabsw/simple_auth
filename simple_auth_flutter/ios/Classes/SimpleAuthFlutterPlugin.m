@@ -51,6 +51,14 @@
         result(@"success");
         return;
     }
+
+    if([@"cancelled" isEqualToString:call.method]){
+    NSDictionary *argsMap = call.arguments;
+            NSDictionary *resultsMap = @{@"identifier": argsMap[@"identifier"], @"url": @"canceled", @"forceComplete": @"true"};
+            _eventSink(resultsMap);
+            result(@"success");
+            return;
+    }
     
     if ([@"saveKey" isEqualToString:call.method]) {
         NSDictionary *argsMap = call.arguments;
