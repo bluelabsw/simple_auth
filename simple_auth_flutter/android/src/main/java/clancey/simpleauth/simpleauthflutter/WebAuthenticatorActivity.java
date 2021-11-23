@@ -60,6 +60,7 @@ public class WebAuthenticatorActivity extends Activity {
         setTitle(authenticator.title);
         webview = new WebView(this);
 
+
         WebSettings settings = webview.getSettings();
         CookieManager.getInstance().removeAllCookies(null);
         CookieManager.getInstance().flush();
@@ -70,6 +71,15 @@ public class WebAuthenticatorActivity extends Activity {
         }
         settings.setJavaScriptEnabled(true);
         webview.setWebViewClient(new Client(this));
+
+        // if (getSupportedActionbar() != null) {
+        // this.getSupportedActionBar().hide();
+        // }
+
+        // requestWindowFeature(Window.FEATURE_NO_TITLE);
+        // this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+        // WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(webview);
         if(savedInstanceState != null)
         {
