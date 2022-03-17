@@ -31,16 +31,6 @@ public class SimpleAuthFlutterPlugin implements FlutterPlugin, ActivityAware,Met
   private EventChannel eventChannel;
 
   private MethodChannel channel;
-  @Override
-  public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "simple_auth_flutter/showAuthenticator");
-    final EventChannel eventChannel =
-            new EventChannel(registrar.messenger(), "simple_auth_flutter/urlChanged");
-    eventChannel.setStreamHandler(this);
-    channel.setMethodCallHandler(this);
-
-  }
-
 
   @Override
   public void onMethodCall(final MethodCall call, final Result result)   {
