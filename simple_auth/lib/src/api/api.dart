@@ -33,21 +33,24 @@ class Api {
   }
 
   ///Used to decode the response body before returning from an API call
-  Future<Response<Value?>> decodeResponse<Value>(
-      Response<String?> response, Type responseType, bool responseIsList) async {
+  Future<Response<Value>> decodeResponse<Value, InnerType>(
+      Response<String?> response) async {
     final converted =
-        await converter?.decode(response, responseType, responseIsList) ??
-            response;
-
-    return converted as Response<Value?>;
+        await converter?.decode<Value, InnerType>(response) ?? response;
+    return converted as Response<Value>;
   }
 
   ///Called before a request is sent across the wire.
   Future<Request> interceptRequest(Request request) async {
     Request req = request;
+    if (defaultHeaders != null) {
+      var map = new Map<String, String>.from(req.headers);
+      map.addAll(defaultHeaders!);
+      req = req.replace(headers: map);
+    }
     if (useragent?.isNotEmpty ?? false) {
-      Map<String, String?> map = new Map.from(request.headers);
-      map["User-Agent"] = useragent;
+      Map<String, String> map = new Map.from(req.headers);
+      map["User-Agent"] = useragent!;
       req = request.replace(headers: map);
     }
     // for (final i in _requestInterceptors) {
@@ -74,8 +77,8 @@ class Api {
   }
 
   ///Used to send a request
-  Future<Response<Value?>> send<Value>(Request request,
-      {Type? responseType, bool responseIsList = false}) async {
+  ///
+  Future<Response<Value>> send<Value, InnerType>(Request request) async {
     Request req = request;
 
     if (req.body != null) {
@@ -90,17 +93,16 @@ class Api {
 
     Response res = new Response<String>(response, response.body);
 
-    if (res.isSuccessful && responseType != null) {
-      res = await decodeResponse<Value>(res as Response<String?>, responseType, responseIsList);
+    if (res.isSuccessful) {
+      res = await decodeResponse<Value, InnerType>(res as Response<String?>);
     }
-
     res = await interceptResponse(res);
 
     if (!res.isSuccessful) {
       throw res;
     }
 
-    return res as FutureOr<Response<Value?>>;
+    return res as FutureOr<Response<Value>>;
   }
 
 //Pings the baseUrl
