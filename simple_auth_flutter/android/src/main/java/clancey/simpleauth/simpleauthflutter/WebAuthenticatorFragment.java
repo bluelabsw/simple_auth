@@ -76,6 +76,12 @@ public class WebAuthenticatorFragment extends DialogFragment {
         return webview;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        authenticator.cancel();
+    }
+
     class Client extends WebViewClient
     {
         private WebAuthenticatorFragment activity;
