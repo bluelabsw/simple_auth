@@ -83,7 +83,8 @@ class _MyHomePageState extends State<MyHomePage> {
         "public_repo",
       ]);
 
-  final simpleAuth.GoogleApi googleApi = new simpleAuth.GoogleApi("google",
+  final simpleAuth.GoogleApi googleApi = new simpleAuth.GoogleApi(
+      "google",
       "992461286651-k3tsbcreniknqptanrugsetiimt0lkvo.apps.googleusercontent.com",
       "redirecturl",
       clientSecret: "avrYAIxweNZwcHpsBlIzTp04",
@@ -124,7 +125,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ListTile(
             title: Text(
               "AzureAD OAuth",
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
           ListTile(
@@ -144,7 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ListTile(
             title: Text(
               "Google OAuth",
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
           ListTile(
@@ -169,7 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ListTile(
             title: Text(
               "Youtube",
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
           ListTile(
@@ -186,7 +187,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           ListTile(
             leading: Icon(Icons.launch),
-
             title: Text('Search for "Flutter"'),
             onTap: () async {
               try {
@@ -198,7 +198,7 @@ class _MyHomePageState extends State<MyHomePage> {
               }
             },
           ),
-          ListTile( 
+          ListTile(
             leading: Icon(Icons.delete),
             title: Text('Logout'),
             onTap: () {
@@ -208,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ListTile(
             title: Text(
               "Amazon OAuth",
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
           ListTile(
@@ -228,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ListTile(
             title: Text(
               "Dropbox OAuth",
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
           ListTile(
@@ -248,7 +248,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ListTile(
             title: Text(
               "Facebook OAuth",
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
           ListTile(
@@ -268,7 +268,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ListTile(
             title: Text(
               "Github OAuth",
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
           ListTile(
@@ -288,7 +288,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ListTile(
             title: Text(
               "Github BasicAuth",
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
           ListTile(
@@ -314,7 +314,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ListTile(
             title: Text(
               "Instagram OAuth",
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
           ListTile(
@@ -334,7 +334,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ListTile(
             title: Text(
               "LinkedIn OAuth",
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
           ListTile(
@@ -354,7 +354,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ListTile(
             title: Text(
               "Microsoft Live OAuth",
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
           ListTile(

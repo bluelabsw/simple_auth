@@ -5,7 +5,6 @@ import 'package:simple_auth_flutter/simple_auth_flutter.dart';
 void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -48,7 +47,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  final simpleAuth.GoogleApi googleApi = new simpleAuth.GoogleApi("google",
+  final simpleAuth.GoogleApi googleApi = new simpleAuth.GoogleApi(
+      "google",
       "992461286651-k3tsbcreniknqptanrugsetiimt0lkvo.apps.googleusercontent.com",
       "redirecturl",
       clientSecret: "avrYAIxweNZwcHpsBlIzTp04",
@@ -100,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             new Text(
               '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ],
         ),

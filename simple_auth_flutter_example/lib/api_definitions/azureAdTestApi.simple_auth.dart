@@ -7,24 +7,25 @@ part of 'azureAdTestApi.dart';
 // **************************************************************************
 
 class AzureAdTestApi extends AzureADApi implements AzureADDefinition {
-  AzureAdTestApi(String identifier,
-      {String clientId: 'client_id',
-      String authorizationUrl:
-          'https://login.microsoftonline.com/azureTennant/oauth2/authorize',
-      String tokenUrl:
-          'https://login.microsoftonline.com/azureTennant/oauth2/token',
-      String resource: 'resource',
-      String redirectUrl: 'redirecturl',
-      String clientSecret: 'client_secret',
-      List<String>? scopes,
-      http.Client? client,
-      Converter? converter,
-      AuthStorage? authStorage})
-      : super(identifier, clientId, authorizationUrl, tokenUrl, resource,
+  AzureAdTestApi(
+    String identifier, {
+    String clientId = 'client_id',
+    String authorizationUrl =
+        'https://login.microsoftonline.com/azureTennant/oauth2/authorize',
+    String tokenUrl =
+        'https://login.microsoftonline.com/azureTennant/oauth2/token',
+    String resource = 'resource',
+    String redirectUrl = 'redirecturl',
+    String clientSecret = 'client_secret',
+    List<String>? scopes,
+    http.Client? client,
+    Converter? converter,
+    AuthStorage? authStorage,
+  }) : super(identifier, clientId, tokenUrl, resource, authorizationUrl,
             redirectUrl,
             clientSecret: clientSecret,
             scopes: scopes,
             client: client,
             converter: converter,
-            authStorage: authStorage);
+            authStorage: authStorage) {}
 }

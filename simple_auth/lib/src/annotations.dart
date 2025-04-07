@@ -18,9 +18,12 @@ class ApiKeyDeclaration extends ApiDeclaration {
   final String apiKey;
   final String authKey;
   const ApiKeyDeclaration(
-      String name, this.apiKey, this.authKey, this.authLocation,
-      {String baseUrl: "/"})
-      : super(name, baseUrl: baseUrl);
+    String name,
+    this.apiKey,
+    this.authKey,
+    this.authLocation, {
+    String baseUrl = "/",
+  }) : super(name, baseUrl: baseUrl);
 }
 
 @immutable
@@ -83,7 +86,7 @@ class AmazonApiDeclaration extends ApiDeclaration {
     this.clientId,
     this.clientSecret,
     this.redirectUrl, {
-    String baseUrl: "/",
+    String baseUrl = "/",
     this.scopes,
   }) : super(name, baseUrl: baseUrl);
 }
@@ -99,7 +102,7 @@ class DropboxApiDeclaration extends ApiDeclaration {
     this.clientId,
     this.clientSecret,
     this.redirectUrl, {
-    String baseUrl: "/",
+    String baseUrl = "/",
     this.scopes,
   }) : super(name, baseUrl: baseUrl);
 }
@@ -115,7 +118,7 @@ class FacebookApiDeclaration extends ApiDeclaration {
     this.clientId,
     this.clientSecret,
     this.redirectUrl, {
-    String baseUrl: "/",
+    String baseUrl = "/",
     this.scopes,
   }) : super(name, baseUrl: baseUrl);
 }
@@ -131,7 +134,7 @@ class GithubApiDeclaration extends ApiDeclaration {
     this.clientId,
     this.clientSecret,
     this.redirectUrl, {
-    String baseUrl: "/",
+    String baseUrl = "/",
     this.scopes,
   }) : super(name, baseUrl: baseUrl);
 }
@@ -147,7 +150,7 @@ class InstagramApiDeclaration extends ApiDeclaration {
     this.clientId,
     this.clientSecret,
     this.redirectUrl, {
-    String baseUrl: "/",
+    String baseUrl = "/",
     this.scopes,
   }) : super(name, baseUrl: baseUrl);
 }
@@ -163,7 +166,7 @@ class LinkedInApiDeclaration extends ApiDeclaration {
     this.clientId,
     this.clientSecret,
     this.redirectUrl, {
-    String baseUrl: "/",
+    String baseUrl = "/",
     this.scopes,
   }) : super(name, baseUrl: baseUrl);
 }
@@ -175,9 +178,13 @@ class MicrosoftLiveDeclaration extends ApiDeclaration {
   final String redirectUrl;
   final List<String>? scopes;
   const MicrosoftLiveDeclaration(
-      String name, this.clientId, this.clientSecret, this.redirectUrl,
-      {String baseUrl: "/", this.scopes})
-      : super(name, baseUrl: baseUrl);
+    String name,
+    this.clientId,
+    this.clientSecret,
+    this.redirectUrl, {
+    String baseUrl = "/",
+    this.scopes,
+  }) : super(name, baseUrl: baseUrl);
 }
 
 @immutable
@@ -191,14 +198,17 @@ class AzureADApiDeclaration extends ApiDeclaration {
   final String redirectUrl;
   final List<String>? scopes;
   const AzureADApiDeclaration(
-      String name, this.clientId, this.resource, this.redirectUrl,
-      {this.clientSecret = "native",
-      String baseUrl: "/",
-      String? authorizationUrl,
-      String? tokenUrl,
-      this.azureTennant = "\$azureTennant",
-      this.scopes})
-      : authorizationUrl = authorizationUrl ??
+    String name,
+    this.clientId,
+    this.resource,
+    this.redirectUrl, {
+    this.clientSecret = "native",
+    String baseUrl = "/",
+    String? authorizationUrl,
+    String? tokenUrl,
+    this.azureTennant = "\$azureTennant",
+    this.scopes,
+  })  : authorizationUrl = authorizationUrl ??
             "https://login.microsoftonline.com/$azureTennant/oauth2/authorize",
         tokenUrl = tokenUrl ??
             "https://login.microsoftonline.com/$azureTennant/oauth2/token",
@@ -214,14 +224,17 @@ class AzureADV2ApiDeclaration extends ApiDeclaration {
   final String clientSecret;
   final String redirectUrl;
   final List<String>? scopes;
-  const AzureADV2ApiDeclaration(String name, this.clientId, this.redirectUrl,
-      {this.clientSecret = "native",
-      String baseUrl: "/",
-      String? authorizationUrl,
-      String? tokenUrl,
-      this.azureTennant = "\$azureTennant",
-      this.scopes})
-      : authorizationUrl = authorizationUrl ??
+  const AzureADV2ApiDeclaration(
+    String name,
+    this.clientId,
+    this.redirectUrl, {
+    this.clientSecret = "native",
+    String baseUrl = "/",
+    String? authorizationUrl,
+    String? tokenUrl,
+    this.azureTennant = "\$azureTennant",
+    this.scopes,
+  })  : authorizationUrl = authorizationUrl ??
             "https://login.microsoftonline.com/$azureTennant/oauth2/v2.0/authorize",
         tokenUrl = tokenUrl ??
             "https://login.microsoftonline.com/$azureTennant/oauth2/v2.0/token",
@@ -241,7 +254,7 @@ class GoogleApiKeyApiDeclaration extends ApiDeclaration {
     this.clientId,
     this.redirectUrl, {
     this.clientSecret = "native",
-    String baseUrl: "/",
+    String baseUrl = "/",
     this.scopes,
   }) : super(name, baseUrl: baseUrl);
 }
@@ -257,7 +270,7 @@ class GoogleApiDeclaration extends ApiDeclaration {
     this.clientId,
     this.redirectUrl, {
     this.clientSecret = "native",
-    String baseUrl: "/",
+    String baseUrl = "/",
     this.scopes,
   }) : super(name, baseUrl: baseUrl);
 }
@@ -292,57 +305,61 @@ class Method {
   final Map<String, String> headers;
   final bool authenticated;
 
-  const Method(this.method,
-      {this.url: "/", this.headers: const {}, this.authenticated = true});
+  const Method(
+    this.method, {
+    this.url = "/",
+    this.headers = const {},
+    this.authenticated = true,
+  });
 }
 
 @immutable
 class Get extends Method {
-  const Get(
-      {String url: "/",
-      Map<String, String> headers: const {},
-      bool authenticated = true})
-      : super(HttpMethod.Get,
+  const Get({
+    String url = "/",
+    Map<String, String> headers = const {},
+    bool authenticated = true,
+  }) : super(HttpMethod.Get,
             url: url, headers: headers, authenticated: authenticated);
 }
 
 @immutable
 class Post extends Method {
-  const Post(
-      {String url: "/",
-      Map<String, String> headers: const {},
-      bool authenticated = true})
-      : super(HttpMethod.Post,
+  const Post({
+    String url = "/",
+    Map<String, String> headers = const {},
+    bool authenticated = true,
+  }) : super(HttpMethod.Post,
             url: url, headers: headers, authenticated: authenticated);
 }
 
 @immutable
 class Delete extends Method {
-  const Delete(
-      {String url: "/",
-      Map<String, String> headers: const {},
-      bool authenticated = true})
-      : super(HttpMethod.Delete,
+  const Delete({
+    String url = "/",
+    Map<String, String> headers = const {},
+    bool authenticated = true,
+  }) : super(HttpMethod.Delete,
             url: url, headers: headers, authenticated: authenticated);
 }
 
 @immutable
 class Put extends Method {
-  const Put(
-      {String url: "/",
-      Map<String, String> headers: const {},
-      bool authenticated = true})
-      : super(HttpMethod.Put,
+  const Put({
+    String url = "/",
+    Map<String, String> headers = const {},
+    bool authenticated = true,
+  }) : super(HttpMethod.Put,
             url: url, headers: headers, authenticated: authenticated);
 }
 
 @immutable
 class Patch extends Method {
-  const Patch(
-      {String url: "/",
-      Map<String, String> headers: const {},
-      bool authenticated = true})
-      : super(HttpMethod.Patch,
+  const Patch({
+    String url = "/",
+    Map<String, String> headers = const {},
+    bool authenticated = true,
+  }) : super(HttpMethod.Patch,
             url: url, headers: headers, authenticated: authenticated);
 }
 

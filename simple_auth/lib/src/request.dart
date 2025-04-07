@@ -12,11 +12,14 @@ class Request {
   final Map<String, dynamic> parameters;
   final Map<String, String?> headers;
 
-  Request(this.method, this.url,
-      {this.body,
-      this.parameters: const {},
-      this.headers: const {},
-      this.authenticated = true});
+  Request(
+    this.method,
+    this.url, {
+    this.body,
+    this.parameters = const {},
+    this.headers = const {},
+    this.authenticated = true,
+  });
 
   String _getMethod(String method) {
     switch (method) {

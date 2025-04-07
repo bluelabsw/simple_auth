@@ -69,6 +69,7 @@ class OAuthApi extends AuthenticatedApi {
       if (!valid || forceRefresh) {
         //If there is no interent, give them the current expired account
         if (!await pingUrl(tokenUrl!)) {
+          currentAccount = account;
           return account;
         }
         if (await refreshAccount(account))
@@ -98,8 +99,7 @@ class OAuthApi extends AuthenticatedApi {
       if (token.isEmpty) {
         throw new Exception("Null Token");
       }
-      account =
-          await getAccountFromAuthCode(_authenticator as WebAuthenticator);
+      account = await getAccountFromAuthCode(_authenticator);
       if (account.isValid()) {
         saveAccountToCache(account);
         currentAccount = account;
