@@ -1,6 +1,6 @@
 package clancey.simpleauth.simpleauthflutter;
 
-import android.app.DialogFragment;
+import androidx.fragment.app.DialogFragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,7 +39,7 @@ public class WebAuthenticatorFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(STYLE_NO_FRAME, android.R.style.Theme_Holo_Light);
+        setStyle(STYLE_NO_FRAME, androidx.appcompat.R.style.Theme_AppCompat_Light_Dialog);
     }
 
     @Override

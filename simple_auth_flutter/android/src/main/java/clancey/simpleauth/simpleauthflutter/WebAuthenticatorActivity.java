@@ -1,6 +1,6 @@
 package clancey.simpleauth.simpleauthflutter;
 
-import android.app.Activity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,7 +14,7 @@ import android.webkit.WebViewClient;
 import java.util.HashMap;
 import java.util.UUID;
 
-public class WebAuthenticatorActivity extends Activity {
+public class WebAuthenticatorActivity extends AppCompatActivity {
     WebView webview;
     public static String UserAgent = "";
 
@@ -33,13 +33,9 @@ public class WebAuthenticatorActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Object lastNonConfigurationInstance = getLastNonConfigurationInstance();
-        if(lastNonConfigurationInstance != null && lastNonConfigurationInstance.getClass().isInstance(WebAuthenticator.class))
-        {
-            authenticator = (WebAuthenticator)lastNonConfigurationInstance;
-        }
+        
         Intent intent = getIntent();
-        if(authenticator == null && intent.hasExtra("StateKey"))
+        if(intent.hasExtra("StateKey"))
         {
             String key = intent.getStringExtra("StateKey");
             authenticator = States.get(key);
@@ -72,14 +68,6 @@ public class WebAuthenticatorActivity extends Activity {
         settings.setJavaScriptEnabled(true);
         webview.setWebViewClient(new Client(this));
 
-        // if (getSupportedActionbar() != null) {
-        // this.getSupportedActionBar().hide();
-        // }
-
-        // requestWindowFeature(Window.FEATURE_NO_TITLE);
-        // this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-        // WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
         setContentView(webview);
         if(savedInstanceState != null)
         {
@@ -92,11 +80,6 @@ public class WebAuthenticatorActivity extends Activity {
     public void onBackPressed() {
         finish();
         authenticator.cancel();
-    }
-
-    @Override
-    public Object onRetainNonConfigurationInstance() {
-        return authenticator;
     }
 
     @Override

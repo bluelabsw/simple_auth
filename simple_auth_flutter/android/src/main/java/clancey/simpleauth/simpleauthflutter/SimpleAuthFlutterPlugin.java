@@ -1,7 +1,6 @@
 package clancey.simpleauth.simpleauthflutter;
 
 import android.app.Application;
-import android.app.FragmentManager;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -48,7 +47,7 @@ public class SimpleAuthFlutterPlugin implements FlutterPlugin, ActivityAware,Met
         authenticators.put(authenticator.identifier,authenticator);
 
         if(authenticator.useEmbeddedBrowser) {
-          FragmentManager fragmentManager = activityBinding.getActivity().getFragmentManager();
+          androidx.fragment.app.FragmentManager fragmentManager = ((androidx.fragment.app.FragmentActivity) activityBinding.getActivity()).getSupportFragmentManager();
           WebAuthenticatorFragment webAuthenticatorFragment = WebAuthenticatorFragment.newInstance(authenticator);
           webAuthenticatorFragment.show(fragmentManager, "web_authenticator_fragment");
         }
@@ -148,12 +147,6 @@ public class SimpleAuthFlutterPlugin implements FlutterPlugin, ActivityAware,Met
   /**
    * Plugin registration.
    */
-
-  @SuppressWarnings("deprecation")
-  public static void registerWith(io.flutter.plugin.common.PluginRegistry.Registrar registrar) {
-    final SimpleAuthFlutterPlugin instance = new SimpleAuthFlutterPlugin();
-    instance.onAttachedToEngine(registrar.context(), registrar.messenger());
-  }
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
