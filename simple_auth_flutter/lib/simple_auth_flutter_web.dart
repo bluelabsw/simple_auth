@@ -1,14 +1,8 @@
 import 'dart:async';
-// In order to *not* need this ignore, consider extracting the "web" version
-// of your plugin as a separate package, instead of inlining it in the same
-// package as the core of your plugin.
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html show window;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-
-import 'dart:html';
+import 'package:web/web.dart' as web;
 
 /// A web implementation of the SimpleAuthFlutter plugin.
 class SimpleAuthFlutterWeb {
@@ -34,7 +28,7 @@ class SimpleAuthFlutterWeb {
 
     _controller = StreamController<Map<Object?, Object?>>();
     sendingChannel.setController(_controller);
-    _initialUrl = window.location.toString();
+    _initialUrl = web.window.location.href;
   }
 
   /// Handles method calls over the MethodChannel of this plugin.
@@ -55,12 +49,12 @@ class SimpleAuthFlutterWeb {
             "description": ""
           });
         } else {
-          html.window.location.replace(
+          web.window.location.replace(
               call.arguments['initialUrl'].toString() + "&prompt=none");
         }
         return true;
       case 'showAuthenticator':
-        html.window.location.replace(call.arguments['initialUrl'].toString());
+        web.window.location.replace(call.arguments['initialUrl'].toString());
         return "code";
       case 'completed':
         return true;
@@ -83,7 +77,7 @@ class SimpleAuthFlutterWeb {
 
   /// Returns a [String] containing the version of the platform.
   Future<String> getPlatformVersion() {
-    final version = html.window.navigator.userAgent;
+    final version = web.window.navigator.userAgent;
     return Future.value(version);
   }
 }

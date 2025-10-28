@@ -1,19 +1,22 @@
 import UIKit
 import Flutter
-import SimpleAuth;
+import simple_auth_flutter
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
     _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
-    override func application(_ app: UIApplication,
+
+  override func application(
+    _ app: UIApplication,
     open url: URL,
-    options: [UIApplication.OpenURLOptionsKey : Any]?) -> Bool{
-        return SimpleAuth.CheckUrl(url);
-    }
+    options: [UIApplication.OpenURLOptionsKey: Any]?
+  ) -> Bool {
+    return SimpleAuthFlutterPlugin.check(url)
+  }
 }
