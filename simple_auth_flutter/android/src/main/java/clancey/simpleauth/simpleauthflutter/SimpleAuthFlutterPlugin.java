@@ -1,5 +1,6 @@
 package clancey.simpleauth.simpleauthflutter;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 
@@ -46,14 +47,18 @@ public class SimpleAuthFlutterPlugin implements FlutterPlugin, ActivityAware,Met
         authenticator.eventSink = _eventSink;
         authenticators.put(authenticator.identifier,authenticator);
 
-        if(authenticator.useEmbeddedBrowser) {
-          androidx.fragment.app.FragmentManager fragmentManager = ((androidx.fragment.app.FragmentActivity) activityBinding.getActivity()).getSupportFragmentManager();
-          WebAuthenticatorFragment webAuthenticatorFragment = WebAuthenticatorFragment.newInstance(authenticator);
-          webAuthenticatorFragment.show(fragmentManager, "web_authenticator_fragment");
-        }
-        else
-        {
-          CustomTabsAuthenticator.presentAuthenticator(activityBinding.getActivity(),authenticator);
+        Activity activity = activityBinding.getActivity();
+        if (authenticator.useEmbeddedBrowser) {
+          if (activity instanceof androidx.fragment.app.FragmentActivity) {
+            androidx.fragment.app.FragmentManager fragmentManager = ((androidx.fragment.app.FragmentActivity) activity).getSupportFragmentManager();
+            WebAuthenticatorFragment webAuthenticatorFragment = WebAuthenticatorFragment.newInstance(authenticator);
+            webAuthenticatorFragment.show(fragmentManager, "web_authenticator_fragment");
+          } else {
+            // Host activity does not support fragments; fall back to dedicated activity.
+            WebAuthenticatorActivity.presentAuthenticator(activity, authenticator);
+          }
+        } else {
+          CustomTabsAuthenticator.presentAuthenticator(activity, authenticator);
         }
 
         result.success("success");

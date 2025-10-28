@@ -68,20 +68,23 @@ class SimpleAuthGenerator
           }
           return new Method((b) {
             b.name = m.displayName;
-            b.returns = new Reference(m.returnType.getDisplayString());
+            b.returns = new Reference(
+                m.returnType.getDisplayString(withNullability: false));
             b.requiredParameters.addAll(m.parameters
                 .where((p) => !p.isOptional)
                 .map((p) => new Parameter((pb) => pb
                   ..name = p.name
                   ..named = true
-                  ..type = new Reference(p.type.getDisplayString()))));
+                  ..type = new Reference(
+                      p.type.getDisplayString(withNullability: false)))));
 
             b.optionalParameters.addAll(m.parameters
                 .where((p) => p.isOptionalPositional)
                 .map((p) => new Parameter((pb) {
                       pb
                         ..name = p.name
-                        ..type = new Reference(p.type.getDisplayString());
+                        ..type = new Reference(
+                            p.type.getDisplayString(withNullability: false));
                       if (p.defaultValueCode != null)
                         pb.defaultTo = new Code(p.defaultValueCode!);
                     })));
@@ -91,7 +94,8 @@ class SimpleAuthGenerator
                 .map((p) => new Parameter((pb) => pb
                   ..named = true
                   ..name = p.name
-                  ..type = new Reference(p.type.getDisplayString()))));
+                  ..type = new Reference(
+                      p.type.getDisplayString(withNullability: false)))));
 
             final blocks = [
               declareFinal(_urlVar).assign(url).statement,
@@ -117,12 +121,14 @@ class SimpleAuthGenerator
             final Map<String, Expression> namedArguments = {};
             final List<Reference> typeArguments = [];
             if (responseType != null) {
-              final raw = baseResponsetype!.getDisplayString();
-              namedArguments["responseType"] = new CodeExpression(
-                  refer(raw.substring(0, raw.length - 1)).code);
-              typeArguments.add(refer(responseType.getDisplayString()));
-              if (baseResponsetype.getDisplayString() !=
-                  responseType.getDisplayString()) {
+              final raw =
+                  baseResponsetype!.getDisplayString(withNullability: false);
+              namedArguments["responseType"] =
+                  CodeExpression(refer(raw).code);
+              typeArguments.add(
+                  refer(responseType.getDisplayString(withNullability: false)));
+              if (baseResponsetype.getDisplayString(withNullability: false) !=
+                  responseType.getDisplayString(withNullability: false)) {
                 namedArguments["responseIsList"] = literal(true);
               }
             }
@@ -174,7 +180,8 @@ class SimpleAuthGenerator
   }
 
   String _getBaseClass(ConstantReader annotation) {
-    final type = annotation.objectValue.type!.getDisplayString();
+    final type =
+        annotation.objectValue.type!.getDisplayString(withNullability: false);
     switch (type) {
       case BuiltInAnnotations.apiKeyDeclaration:
         return "${simple_auth.ApiKeyApi}";
@@ -217,7 +224,8 @@ class SimpleAuthGenerator
   }
 
   Constructor _getConstructor(ConstantReader annotation) {
-    final type = annotation.objectValue.type!.getDisplayString();
+    final type =
+        annotation.objectValue.type!.getDisplayString(withNullability: false);
     final scopes = annotation.peek("scopes")?.listValue;
     final baseUrl = annotation.peek("baseUrl")!.stringValue;
     String body = "";

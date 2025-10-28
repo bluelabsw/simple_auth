@@ -1,0 +1,50 @@
+class YoutubeApi extends GoogleApiKeyApi implements YouTubeApiDefinition {
+  YoutubeApi(
+    String identifier, {
+    String apiKey =
+        '419855213697-uq56vcune334omgqi51ou7jg08i3dnb1.apps.googleusercontent.com',
+    String clientId = 'AIzaSyCxoYMmVpDwj7KXI3tRjWkVGsgg7JR5zAw',
+    String clientSecret = 'UwQ8aUXKDpqPzH0gpJnSij3i',
+    String redirectUrl = 'redirecturl',
+    List<String>? scopes,
+    http.Client? client,
+    Converter? converter,
+    AuthStorage? authStorage,
+  }) : super(identifier, apiKey, clientId, redirectUrl,
+            clientSecret: clientSecret,
+            scopes: scopes,
+            client: client,
+            converter: converter,
+            authStorage: authStorage) {
+    this.baseUrl = 'https://www.googleapis.com/youtube/v3';
+    this.scopes = scopes ??
+        [
+          'https://www.googleapis.com/auth/youtube.readonly',
+          'https://www.googleapis.com/auth/userinfo.email',
+          'https://www.googleapis.com/auth/userinfo.profile'
+        ];
+  }
+
+  Future<Response<String>> search(
+    String q, [
+    int maxResults = 25,
+    String part = "snippet",
+  ]) {
+    final url = 'search';
+    final params = {
+      'q': q,
+      'maxResults': maxResults,
+      'part': part,
+    };
+    final request = Request(
+      'GET',
+      url,
+      parameters: params,
+      authenticated: true,
+    );
+    return send<String>(
+      request,
+      responseType: String,
+    );
+  }
+}

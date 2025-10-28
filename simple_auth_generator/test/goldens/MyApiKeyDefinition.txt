@@ -1,0 +1,11 @@
+class MyApiKeyDefinitionApi extends ApiKeyApi implements MyApiKeyDefinition {
+  MyApiKeyDefinitionApi({
+    String apiKey = 'fdsfdskjfdskljflds',
+    String authKey = 'key',
+    AuthLocation authLocation = AuthLocation.query,
+    http.Client? client,
+    Converter? converter,
+    AuthStorage? authStorage,
+  }) : super(apiKey, authKey, authLocation,
+            client: client, converter: converter, authStorage: authStorage) {}
+}
