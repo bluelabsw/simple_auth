@@ -1,0 +1,91 @@
+class MyService extends Api implements MyServiceDefinition {
+  MyService([
+    http.Client? client,
+    Converter? converter,
+    AuthStorage? authStorage,
+  ]) : super(client: client, converter: converter);
+
+  Future<Response<List<GoogleUser>>> getList(String id) {
+    final url = '/';
+    final params = {'id': id};
+    final headers = {'foo': 'bar'};
+    final request = Request(
+      'GET',
+      url,
+      parameters: params,
+      headers: headers,
+      authenticated: true,
+    );
+    return send<List<GoogleUser>>(
+      request,
+      responseType: GoogleUser,
+      responseIsList: true,
+    );
+  }
+
+  Future<Response<JsonSerializableObject>> getJsonSerializableObject(
+      String id) {
+    final url = '/';
+    final params = {'id': id};
+    final headers = {'foo': 'bar'};
+    final request = Request(
+      'GET',
+      url,
+      parameters: params,
+      headers: headers,
+      authenticated: true,
+    );
+    return send<JsonSerializableObject>(
+      request,
+      responseType: JsonSerializableObject,
+    );
+  }
+
+  Future<Response<dynamic>> getResource(String id) {
+    final url = '/$id';
+    final request = Request(
+      'GET',
+      url,
+      authenticated: true,
+    );
+    return send(request);
+  }
+
+  Future<Response<Map<dynamic, dynamic>>> getMapResource(String id) {
+    final url = '/';
+    final params = {'id': id};
+    final headers = {'foo': 'bar'};
+    final request = Request(
+      'GET',
+      url,
+      parameters: params,
+      headers: headers,
+      authenticated: true,
+    );
+    return send<Map<dynamic, dynamic>>(
+      request,
+      responseType: Map<dynamic, dynamic>,
+    );
+  }
+
+  @override
+  Future<Response<Value?>> decodeResponse<Value>(
+    Response<String?> response,
+    Type responseType,
+    bool responseIsList,
+  ) async {
+    var converted =
+        await converter?.decode(response, responseType, responseIsList);
+    if (converted != null) return converted as Response<Value?>;
+    if (responseType == GoogleUser) {
+      final d =
+          await jsonConverter.decode(response, responseType, responseIsList);
+      final body = responseIsList && d.body is List
+          ? new List.from((d.body as List)
+              .map((f) => new GoogleUser.fromJson(f as Map<String, dynamic>)))
+          : new GoogleUser.fromJson(d.body as Map<String, dynamic>);
+      return new Response(d.base, body as Value);
+    }
+    throw new Exception('No converter found for type $Value');
+  }
+}

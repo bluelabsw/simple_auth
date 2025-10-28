@@ -1,0 +1,10 @@
+class MyBasicAuthApi extends BasicAuthApi implements MyBasicAuthApiDefinition {
+  MyBasicAuthApi(
+    String identifier, {
+    String loginUrl = 'http://example.com/login',
+    http.Client? client,
+    Converter? converter,
+    AuthStorage? authStorage,
+  }) : super(identifier, loginUrl,
+            client: client, converter: converter, authStorage: authStorage) {}
+}

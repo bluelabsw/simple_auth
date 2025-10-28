@@ -1,0 +1,19 @@
+class MyOAuthApi extends OAuthApi implements MyOAuthApiDefinition {
+  MyOAuthApi(
+    String identifier, {
+    String clientId = 'client_id',
+    String clientSecret = 'clientSecret',
+    String tokenUrl = 'TokenUrl',
+    String authorizationUrl = 'AuthUrl',
+    String redirectUrl = 'redirecturl',
+    List<String>? scopes,
+    http.Client? client,
+    Converter? converter,
+    AuthStorage? authStorage,
+  }) : super(identifier, clientId, clientSecret, tokenUrl, authorizationUrl,
+            redirectUrl,
+            scopes: scopes,
+            client: client,
+            converter: converter,
+            authStorage: authStorage) {}
+}
