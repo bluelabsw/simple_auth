@@ -8,6 +8,7 @@ import 'package:web/web.dart' as web;
 class SimpleAuthFlutterWeb {
   static String? _initialUrl;
   static StreamController<Map<Object?, Object?>>? _controller;
+  static final Map<String, String> _inMemoryStore = <String, String>{};
 
   static void registerWith(Registrar registrar) {
     final MethodChannel channel = MethodChannel(
@@ -66,6 +67,10 @@ class SimpleAuthFlutterWeb {
           "description": ""
         });
         return true;
+      case 'saveKey':
+        return _handleSaveKey(call.arguments);
+      case 'getValue':
+        return _handleGetValue(call.arguments);
       default:
         throw PlatformException(
           code: 'Unimplemented',
@@ -73,6 +78,56 @@ class SimpleAuthFlutterWeb {
               'simple_auth_flutter for web doesn\'t implement \'${call.method}\'',
         );
     }
+  }
+
+  dynamic _handleSaveKey(Map<Object?, Object?>? arguments) {
+    final key = arguments?['key'] as String?;
+    final value = arguments?['value'] as String?;
+    if (key == null || key.isEmpty) {
+      throw PlatformException(
+        code: 'invalid_arguments',
+        message: 'Key cannot be null or empty.',
+      );
+    }
+
+    try {
+      final storage = web.window.localStorage;
+      if (value == null || value.isEmpty) {
+        storage.removeItem(key);
+      } else {
+        storage.setItem(key, value);
+      }
+    } catch (_) {
+      // Ignore storage errors (e.g., privacy modes); fall back to in-memory cache.
+    }
+
+    if (value == null || value.isEmpty) {
+      _inMemoryStore.remove(key);
+    } else {
+      _inMemoryStore[key] = value;
+    }
+
+    return 'success';
+  }
+
+  dynamic _handleGetValue(Map<Object?, Object?>? arguments) {
+    final key = arguments?['key'] as String?;
+    if (key == null || key.isEmpty) {
+      return null;
+    }
+
+    try {
+      final storage = web.window.localStorage;
+      final storedValue = storage.getItem(key);
+      if (storedValue != null) {
+        _inMemoryStore[key] = storedValue;
+        return storedValue;
+      }
+    } catch (_) {
+      // Ignore storage errors; defer to in-memory fallback.
+    }
+
+    return _inMemoryStore[key];
   }
 
   /// Returns a [String] containing the version of the platform.
