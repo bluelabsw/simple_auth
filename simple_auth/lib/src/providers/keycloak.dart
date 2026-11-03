@@ -72,6 +72,44 @@ class KeycloakApi extends OAuthApi {
   @override
   Authenticator getAuthenticator() => KeycloakAuthenticator(identifier,
       clientId, clientSecret, tokenUrl, authorizationUrl, redirectUrl, scopes);
+
+  Future<OAuthAccount?>? _passwordUpdate;
+
+  Future<OAuthAccount?> updatePassword() async {
+    final pending = _passwordUpdate ??= _performPasswordUpdate();
+    try {
+      return await pending;
+    } finally {
+      if (identical(_passwordUpdate, pending)) _passwordUpdate = null;
+    }
+  }
+
+  Future<OAuthAccount?> _performPasswordUpdate() async {
+    final present = showAuthenticator ?? OAuthApi.sharedShowAuthenticator;
+    if (present == null) {
+      throw StateError('An authenticator presenter is required');
+    }
+    final action = KeycloakPasswordAuthenticator(identifier, clientId,
+        clientSecret, tokenUrl, authorizationUrl, redirectUrl, scopes);
+    await action.resetAuthenticator();
+    try {
+      await Future.wait<dynamic>([
+        action.getAuthCode(),
+        Future<void>.sync(() => present(action)),
+      ], eagerError: true);
+    } on CancelledException {
+      return null;
+    }
+    final account = await getAccountFromAuthCode(action);
+    if ((account.token?.isEmpty ?? true) ||
+        account.expiresIn == null ||
+        !account.isValid()) {
+      throw StateError('Password update did not return a valid account');
+    }
+    await saveAccountToCache(account);
+    currentAccount = account;
+    return account;
+  }
 }
 
 /// Extend OAuthAuthenticator to disable SSO by default
@@ -90,6 +128,57 @@ class KeycloakAuthenticator extends OAuthAuthenticator {
     useEmbeddedBrowser = true;
     // Disable SSO to remove Apples user consent dialog
     useSSO = false;
+  }
+}
+
+class KeycloakPasswordAuthenticator extends KeycloakAuthenticator {
+  KeycloakPasswordAuthenticator(
+      String? identifier,
+      String? clientId,
+      String? clientSecret,
+      String? tokenUrl,
+      String? baseUrl,
+      String? redirectUrl,
+      List<String>? scopes)
+      : super(identifier, clientId, clientSecret, tokenUrl, baseUrl,
+            redirectUrl, scopes);
+
+  @override
+  Future<Map<String, dynamic>> getInitialUrlQueryParameters() async {
+    final parameters = await super.getInitialUrlQueryParameters();
+    parameters['kc_action'] = 'UPDATE_PASSWORD';
+    return parameters;
+  }
+
+  @override
+  bool checkUrl(Uri url) {
+    if (hasCompleted || redirectUrl == null) return false;
+    final redirect = Uri.parse(redirectUrl!);
+    if (url.scheme != redirect.scheme ||
+        url.host != redirect.host ||
+        url.port != redirect.port ||
+        url.path != redirect.path) return false;
+    final status = url.queryParameters['kc_action_status'];
+    final error = url.queryParameters['error'];
+    if (status == 'cancelled' || error == 'access_denied') {
+      cancel();
+      return true;
+    }
+    if (error != null || (status != null && status != 'success')) {
+      onError('Keycloak password update failed');
+      return true;
+    }
+    return super.checkUrl(url);
+  }
+
+  @override
+  void cancel() {
+    if (!hasCompleted) super.cancel();
+  }
+
+  @override
+  void onError(String error) {
+    if (!hasCompleted) super.onError(error);
   }
 }
 
@@ -122,7 +211,6 @@ class KeycloakUser implements JsonSerializable {
 
   KeycloakUser(
     this.sub, {
-
     // Email scope
     this.email,
     this.emailVerified,
