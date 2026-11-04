@@ -75,8 +75,9 @@ class KeycloakApi extends OAuthApi {
 
   Future<OAuthAccount?>? _passwordUpdate;
 
-  Future<OAuthAccount?> updatePassword() async {
-    final pending = _passwordUpdate ??= _performPasswordUpdate();
+  Future<OAuthAccount?> updatePassword({String? state, Uri? callback}) async {
+    final pending = _passwordUpdate ??=
+        _performPasswordUpdate(state: state, callback: callback);
     try {
       return await pending;
     } finally {
@@ -84,18 +85,28 @@ class KeycloakApi extends OAuthApi {
     }
   }
 
-  Future<OAuthAccount?> _performPasswordUpdate() async {
+  Future<OAuthAccount?> _performPasswordUpdate(
+      {String? state, Uri? callback}) async {
     final present = showAuthenticator ?? OAuthApi.sharedShowAuthenticator;
-    if (present == null) {
+    if (present == null && callback == null) {
       throw StateError('An authenticator presenter is required');
     }
     final action = KeycloakPasswordAuthenticator(identifier, clientId,
-        clientSecret, tokenUrl, authorizationUrl, redirectUrl, scopes);
+        clientSecret, tokenUrl, authorizationUrl, redirectUrl, scopes,
+        state: state);
     await action.resetAuthenticator();
     try {
       await Future.wait<dynamic>([
         action.getAuthCode(),
-        Future<void>.sync(() => present(action)),
+        Future<void>.sync(() {
+          if (callback != null) {
+            if (!action.checkUrl(callback)) {
+              throw StateError('Invalid password update callback');
+            }
+          } else {
+            present!(action);
+          }
+        }),
       ], eagerError: true);
     } on CancelledException {
       return null;
@@ -132,6 +143,8 @@ class KeycloakAuthenticator extends OAuthAuthenticator {
 }
 
 class KeycloakPasswordAuthenticator extends KeycloakAuthenticator {
+  final String? state;
+
   KeycloakPasswordAuthenticator(
       String? identifier,
       String? clientId,
@@ -139,7 +152,8 @@ class KeycloakPasswordAuthenticator extends KeycloakAuthenticator {
       String? tokenUrl,
       String? baseUrl,
       String? redirectUrl,
-      List<String>? scopes)
+      List<String>? scopes,
+      {this.state})
       : super(identifier, clientId, clientSecret, tokenUrl, baseUrl,
             redirectUrl, scopes);
 
@@ -147,6 +161,7 @@ class KeycloakPasswordAuthenticator extends KeycloakAuthenticator {
   Future<Map<String, dynamic>> getInitialUrlQueryParameters() async {
     final parameters = await super.getInitialUrlQueryParameters();
     parameters['kc_action'] = 'UPDATE_PASSWORD';
+    if (state != null) parameters['state'] = state;
     return parameters;
   }
 
@@ -158,6 +173,7 @@ class KeycloakPasswordAuthenticator extends KeycloakAuthenticator {
         url.host != redirect.host ||
         url.port != redirect.port ||
         url.path != redirect.path) return false;
+    if (state != null && url.queryParameters['state'] != state) return false;
     final status = url.queryParameters['kc_action_status'];
     final error = url.queryParameters['error'];
     if (status == 'cancelled' || error == 'access_denied') {

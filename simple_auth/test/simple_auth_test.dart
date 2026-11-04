@@ -82,6 +82,57 @@ void main() {
           completion(isNot(contains('kc_action'))));
     });
 
+    test('includes state and rejects an unrelated action callback', () async {
+      final pending = api.updatePassword(state: 'password-reset-test');
+      final action = await presented.future;
+      expect((await action.getInitialUrl()).queryParameters['state'],
+          'password-reset-test');
+      expect(
+          action.checkUrl(
+              Uri.parse('eden://callback?code=new-code&state=another-action')),
+          isFalse);
+      action.cancel();
+      expect(await pending, isNull);
+      expect(exchanges, 0);
+    });
+
+    test('resumes a returned callback without reopening authentication',
+        () async {
+      api.showAuthenticator = null;
+      final account = await api.updatePassword(
+        state: 'password-reset-test',
+        callback: Uri.parse(
+            'eden://callback?code=new-code&state=password-reset-test&kc_action_status=success'),
+      );
+      expect(account?.token, 'new-token');
+      expect(exchanges, 1);
+      expect(presented.isCompleted, isFalse);
+    });
+
+    test('resumed cancellation preserves the account without an exchange',
+        () async {
+      final account = await api.updatePassword(
+        state: 'password-reset-test',
+        callback: Uri.parse(
+            'eden://callback?state=password-reset-test&kc_action_status=cancelled'),
+      );
+      expect(account, isNull);
+      expect(api.currentAccount, same(previous));
+      expect(exchanges, 0);
+    });
+
+    test('rejects a resumed callback with mismatched state', () async {
+      await expectLater(
+          api.updatePassword(
+            state: 'password-reset-test',
+            callback:
+                Uri.parse('eden://callback?code=new-code&state=another-action'),
+          ),
+          throwsA(isA<StateError>()));
+      expect(api.currentAccount, same(previous));
+      expect(exchanges, 0);
+    });
+
     test('browser cancellation preserves session and allows another attempt',
         () async {
       final pending = api.updatePassword();
