@@ -70,31 +70,49 @@ class KeycloakApi extends OAuthApi {
   }
 
   @override
-  Authenticator getAuthenticator() => KeycloakAuthenticator(identifier,
-      clientId, clientSecret, tokenUrl, authorizationUrl, redirectUrl, scopes);
+  Authenticator getAuthenticator() => KeycloakAuthenticator(
+    identifier,
+    clientId, 
+    clientSecret, 
+    tokenUrl, 
+    authorizationUrl, 
+    redirectUrl, 
+    scopes
+  );
 
   Future<OAuthAccount?>? _passwordUpdate;
 
   Future<OAuthAccount?> updatePassword({String? state, Uri? callback}) async {
-    final pending = _passwordUpdate ??=
-        _performPasswordUpdate(state: state, callback: callback);
+    final pending = _passwordUpdate ??= _performPasswordUpdate(state: state, callback: callback);
+    
     try {
       return await pending;
     } finally {
-      if (identical(_passwordUpdate, pending)) _passwordUpdate = null;
+      if (identical(_passwordUpdate, pending)) {
+        _passwordUpdate = null;
+      } 
     }
   }
 
-  Future<OAuthAccount?> _performPasswordUpdate(
-      {String? state, Uri? callback}) async {
+  Future<OAuthAccount?> _performPasswordUpdate({String? state, Uri? callback}) async {
     final present = showAuthenticator ?? OAuthApi.sharedShowAuthenticator;
+
     if (present == null && callback == null) {
       throw StateError('An authenticator presenter is required');
     }
-    final action = KeycloakPasswordAuthenticator(identifier, clientId,
-        clientSecret, tokenUrl, authorizationUrl, redirectUrl, scopes,
-        state: state);
+
+    final action = KeycloakPasswordAuthenticator(
+      identifier, clientId,
+      clientSecret, 
+      tokenUrl, 
+      authorizationUrl, 
+      redirectUrl, 
+      scopes,
+      state: state
+    );
+
     await action.resetAuthenticator();
+
     try {
       await Future.wait<dynamic>([
         action.getAuthCode(),
@@ -111,14 +129,21 @@ class KeycloakApi extends OAuthApi {
     } on CancelledException {
       return null;
     }
+
     final account = await getAccountFromAuthCode(action);
-    if ((account.token?.isEmpty ?? true) ||
-        account.expiresIn == null ||
-        !account.isValid()) {
+
+    if (
+      (account.token?.isEmpty ?? true) ||
+      account.expiresIn == null ||
+      !account.isValid()
+    ) {
       throw StateError('Password update did not return a valid account');
     }
+
     await saveAccountToCache(account);
+
     currentAccount = account;
+
     return account;
   }
 }
@@ -146,55 +171,86 @@ class KeycloakPasswordAuthenticator extends KeycloakAuthenticator {
   final String? state;
 
   KeycloakPasswordAuthenticator(
-      String? identifier,
-      String? clientId,
-      String? clientSecret,
-      String? tokenUrl,
-      String? baseUrl,
-      String? redirectUrl,
-      List<String>? scopes,
-      {this.state})
-      : super(identifier, clientId, clientSecret, tokenUrl, baseUrl,
-            redirectUrl, scopes);
+    String? identifier,
+    String? clientId,
+    String? clientSecret,
+    String? tokenUrl,
+    String? baseUrl,
+    String? redirectUrl,
+    List<String>? scopes,
+    {this.state}
+  ): super(
+    identifier, 
+    clientId, 
+    clientSecret, 
+    tokenUrl, 
+    baseUrl,
+    redirectUrl, 
+    scopes
+  );
 
   @override
   Future<Map<String, dynamic>> getInitialUrlQueryParameters() async {
     final parameters = await super.getInitialUrlQueryParameters();
+
     parameters['kc_action'] = 'UPDATE_PASSWORD';
-    if (state != null) parameters['state'] = state;
+
+    if (state != null) {
+      parameters['state'] = state;
+    }
+
     return parameters;
   }
 
   @override
   bool checkUrl(Uri url) {
-    if (hasCompleted || redirectUrl == null) return false;
+    if (hasCompleted || redirectUrl == null) {
+      return false;
+    }
+
     final redirect = Uri.parse(redirectUrl!);
-    if (url.scheme != redirect.scheme ||
-        url.host != redirect.host ||
-        url.port != redirect.port ||
-        url.path != redirect.path) return false;
-    if (state != null && url.queryParameters['state'] != state) return false;
+    
+    if (
+      url.scheme != redirect.scheme ||
+      url.host != redirect.host ||
+      url.port != redirect.port ||
+      url.path != redirect.path
+    ) {
+      return false;
+    }
+
+    if (state != null && url.queryParameters['state'] != state) {
+      return false;
+    }
+
     final status = url.queryParameters['kc_action_status'];
     final error = url.queryParameters['error'];
+    
     if (status == 'cancelled' || error == 'access_denied') {
       cancel();
       return true;
     }
+
     if (error != null || (status != null && status != 'success')) {
       onError('Keycloak password update failed');
       return true;
     }
+
     return super.checkUrl(url);
   }
 
   @override
   void cancel() {
-    if (!hasCompleted) super.cancel();
+    if (!hasCompleted) {
+      super.cancel();
+    }
   }
 
   @override
   void onError(String error) {
-    if (!hasCompleted) super.onError(error);
+    if (!hasCompleted) {
+      super.onError(error);
+    } 
   }
 }
 

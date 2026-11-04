@@ -20,102 +20,140 @@ void main() {
       exchanges = 0;
       tokenFails = false;
       presented = Completer<WebAuthenticator>();
-      api = KeycloakApi('keycloak', 'eden-app', '', 'eden://callback',
-          'https://auth.example.com', 'bluelab',
+
+      api = KeycloakApi(
+        'keycloak', 
+        'test-app', 
+        '', 
+        'test-app://callback',
+        'https://auth.example.com', 
+        'test-org',
           scopes: ['openid', 'profile', 'offline_access'],
-          authStorage: storage, client: MockClient((request) async {
-        exchanges++;
-        if (tokenFails) {
-          return http.Response('{"error":"invalid_grant"}', 400);
-        }
-        expect(request.url.path,
-            '/auth/realms/bluelab/protocol/openid-connect/token');
-        final body = Uri.splitQueryString(request.body);
-        expect(body['code'], 'new-code');
-        expect(body['redirect_uri'], 'eden://callback');
-        return http.Response(
-            jsonEncode({
-              'access_token': 'new-token',
-              'refresh_token': 'new-refresh',
-              'token_type': 'Bearer',
-              'expires_in': 300,
-            }),
-            200);
-      }));
-      previous = OAuthAccount('keycloak',
-          token: 'old-token',
-          refreshToken: 'old-refresh',
-          expiresIn: 300,
-          created: DateTime.now().toUtc());
+          authStorage: storage, 
+          client: MockClient((request) async {
+            exchanges++;
+
+            if (tokenFails) {
+              return http.Response('{"error":"invalid_grant"}', 400);
+            }
+
+            expect(
+              request.url.path,
+              '/auth/realms/test-org/protocol/openid-connect/token'
+            );
+
+            final body = Uri.splitQueryString(request.body);
+
+            expect(body['code'], 'new-code');
+            expect(body['redirect_uri'], 'test-app://callback');
+
+            return http.Response(
+              jsonEncode({
+                'access_token': 'new-token',
+                'refresh_token': 'new-refresh',
+                'token_type': 'Bearer',
+                'expires_in': 300,
+              }),
+              200
+            );
+          }));
+
+      previous = OAuthAccount(
+        'keycloak',
+        token: 'old-token',
+        refreshToken: 'old-refresh',
+        expiresIn: 300,
+        created: DateTime.now().toUtc()
+      );
+
       api.currentAccount = previous;
+
       api.showAuthenticator = (authenticator) {
         presented.complete(authenticator);
       };
     });
 
-    test('opens with a valid session and exchanges duplicate callbacks once',
-        () async {
+    test('opens with a valid session and exchanges duplicate callbacks once', () async {
       final pending = api.updatePassword();
       final concurrent = api.updatePassword();
       final action = await presented.future;
       final initial = await action.getInitialUrl();
+
       expect(initial.queryParameters['kc_action'], 'UPDATE_PASSWORD');
-      expect(initial.queryParameters['redirect_uri'], 'eden://callback');
+      expect(initial.queryParameters['redirect_uri'], 'test-app://callback');
       expect(initial.queryParameters['scope'], 'openid profile offline_access');
       expect(action.useEmbeddedBrowser, isTrue);
       expect(exchanges, 0);
       expect(api.currentAccount, same(previous));
-      final callback =
-          Uri.parse('eden://callback?code=new-code&kc_action_status=success');
+
+      final callback = Uri.parse('test-app://callback?code=new-code&kc_action_status=success');
+
       expect(action.checkUrl(callback), isTrue);
       expect(action.checkUrl(callback), isFalse);
+
       final account = await pending;
+
       expect(await concurrent, same(account));
       expect(account?.token, 'new-token');
       expect(api.currentAccount, same(account));
-      expect(jsonDecode(storage.values['keycloak']!)['refreshToken'],
-          'new-refresh');
+
+      expect(
+        jsonDecode(
+          storage.values['keycloak']!
+        )['refreshToken'],
+        'new-refresh'
+      
+      );
       expect(exchanges, 1);
       expect(
-          (api.getAuthenticator() as WebAuthenticator)
-              .getInitialUrlQueryParameters(),
-          completion(isNot(contains('kc_action'))));
+        (api.getAuthenticator() as WebAuthenticator).getInitialUrlQueryParameters(),
+        completion(isNot(contains('kc_action')))
+      );
     });
 
     test('includes state and rejects an unrelated action callback', () async {
       final pending = api.updatePassword(state: 'password-reset-test');
       final action = await presented.future;
-      expect((await action.getInitialUrl()).queryParameters['state'],
-          'password-reset-test');
+
       expect(
-          action.checkUrl(
-              Uri.parse('eden://callback?code=new-code&state=another-action')),
-          isFalse);
+        (await action.getInitialUrl()).queryParameters['state'],
+        'password-reset-test'
+      );
+      
+      expect(
+        action.checkUrl(Uri.parse('test-app://callback?code=new-code&state=another-action')),
+        isFalse
+      );
+
       action.cancel();
+      
       expect(await pending, isNull);
       expect(exchanges, 0);
     });
 
-    test('resumes a returned callback without reopening authentication',
-        () async {
+    test('resumes a returned callback without reopening authentication', () async {
       api.showAuthenticator = null;
+
       final account = await api.updatePassword(
         state: 'password-reset-test',
         callback: Uri.parse(
-            'eden://callback?code=new-code&state=password-reset-test&kc_action_status=success'),
+          'test-app://callback?code=new-code&state=password-reset-test&kc_action_status=success'
+        ),
       );
+
       expect(account?.token, 'new-token');
       expect(exchanges, 1);
       expect(presented.isCompleted, isFalse);
     });
 
-    test('resumed cancellation preserves the account without an exchange',
-        () async {
+    test('resumed cancellation preserves the account without an exchange', () async {
       final account = await api.updatePassword(
         state: 'password-reset-test',
         callback: Uri.parse(
-            'eden://callback?state=password-reset-test&kc_action_status=cancelled'),
+          'test-app://callback?state=password-reset-test&kc_action_status=cancelled'
+        ),
       );
+
       expect(account, isNull);
       expect(api.currentAccount, same(previous));
       expect(exchanges, 0);
@@ -123,39 +161,50 @@ void main() {
 
     test('rejects a resumed callback with mismatched state', () async {
       await expectLater(
-          api.updatePassword(
-            state: 'password-reset-test',
-            callback:
-                Uri.parse('eden://callback?code=new-code&state=another-action'),
-          ),
-          throwsA(isA<StateError>()));
+        api.updatePassword(
+          state: 'password-reset-test',
+          callback: Uri.parse('test-app://callback?code=new-code&state=another-action'),
+        ),
+
+        throwsA(isA<StateError>())
+      );
+
       expect(api.currentAccount, same(previous));
       expect(exchanges, 0);
     });
 
-    test('browser cancellation preserves session and allows another attempt',
-        () async {
+    test('browser cancellation preserves session and allows another attempt', () async {
       final pending = api.updatePassword();
       final action = await presented.future;
+
       action.cancel();
       action.cancel();
+
       expect(await pending, isNull);
       expect(api.currentAccount, same(previous));
       expect(storage.values, isEmpty);
       expect(exchanges, 0);
+
       presented = Completer<WebAuthenticator>();
+
       final retry = api.updatePassword();
+
       (await presented.future).cancel();
+
       expect(await retry, isNull);
     });
 
     test('Keycloak cancellation does not exchange a returned code', () async {
       final pending = api.updatePassword();
       final action = await presented.future;
+
       expect(
-          action.checkUrl(Uri.parse(
-              'eden://callback?code=new-code&kc_action_status=cancelled')),
-          isTrue);
+          action.checkUrl(
+            Uri.parse('test-app://callback?code=new-code&kc_action_status=cancelled')
+          ),
+          isTrue
+      );
+
       expect(await pending, isNull);
       expect(api.currentAccount, same(previous));
       expect(exchanges, 0);
@@ -165,9 +214,14 @@ void main() {
       final pending = api.updatePassword();
       final failure = expectLater(pending, throwsException);
       final action = await presented.future;
-      expect(action.checkUrl(Uri.parse('eden://callback?error=server_error')),
-          isTrue);
+
+      expect(
+        action.checkUrl(Uri.parse('test-app://callback?error=server_error')),
+        isTrue
+      );
+      
       await failure;
+      
       expect(api.currentAccount, same(previous));
       expect(exchanges, 0);
     });
@@ -175,11 +229,19 @@ void main() {
     test('rejects callbacks with a different scheme or path', () async {
       final pending = api.updatePassword();
       final action = await presented.future;
-      expect(action.checkUrl(Uri.parse('https://callback?code=new-code')),
-          isFalse);
-      expect(action.checkUrl(Uri.parse('eden://callback/other?code=new-code')),
-          isFalse);
+
+      expect(
+        action.checkUrl(Uri.parse('https://callback?code=new-code')),
+        isFalse
+      );
+      
+      expect(
+        action.checkUrl(Uri.parse('test-app://callback/other?code=new-code')),
+        isFalse
+      );
+      
       action.cancel();
+      
       expect(await pending, isNull);
       expect(exchanges, 0);
     });
@@ -187,12 +249,17 @@ void main() {
     test('token failure preserves the current and cached account', () async {
       tokenFails = true;
       await api.saveAccountToCache(previous);
+
       final cached = storage.values['keycloak'];
       final pending = api.updatePassword();
       final failure = expectLater(pending, throwsA(isA<StateError>()));
-      (await presented.future)
-          .checkUrl(Uri.parse('eden://callback?code=new-code'));
+
+      (await presented.future).checkUrl(
+        Uri.parse('test-app://callback?code=new-code')
+      );
+      
       await failure;
+      
       expect(api.currentAccount, same(previous));
       expect(storage.values['keycloak'], cached);
     });
