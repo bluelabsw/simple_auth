@@ -1,5 +1,6 @@
 package clancey.simpleauth.simpleauthflutter;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -74,12 +75,14 @@ public class WebAuthenticatorActivity extends AppCompatActivity {
             webview.restoreState(savedInstanceState);
         }
         webview.loadUrl(authenticator.initialUrl);
-    }
 
-    @Override
-    public void onBackPressed() {
-        finish();
-        authenticator.cancel();
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+                authenticator.cancel();
+            }
+        });
     }
 
     @Override

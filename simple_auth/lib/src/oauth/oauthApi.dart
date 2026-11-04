@@ -5,7 +5,7 @@ import "package:http/http.dart" as http;
 import "dart:convert" as convert;
 
 typedef void InitAuthenticator(WebAuthenticator authenticator);
-typedef void ShowAuthenticator(WebAuthenticator authenticator);
+typedef FutureOr<void> ShowAuthenticator(WebAuthenticator authenticator);
 
 class OAuthApi extends AuthenticatedApi {
   static InitAuthenticator? sharedInitAuthenticator;
